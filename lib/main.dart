@@ -4,15 +4,17 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(
-  const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: WebViewExample(),
-  ),
-);
+      const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: WebViewExample(),
+      ),
+    );
 
 class WebViewExample extends StatefulWidget {
   const WebViewExample({super.key});
@@ -37,6 +39,7 @@ class _WebViewExampleState extends State<WebViewExample> {
           onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
+            // shouldOverrideUrlLoading(request);
             if (request.url.startsWith('https://recruitment.jobo.uz/')) {
               return NavigationDecision.prevent;
             }
@@ -47,17 +50,26 @@ class _WebViewExampleState extends State<WebViewExample> {
       ..loadRequest(Uri.parse('https://recruitment.jobo.uz/'));
   }
 
+  final blacklistedSites = ['https://jobo.uz/'];
+
+  NavigationDecision shouldOverrideUrlLoading(NavigationRequest request) {
+    if(request.url.contains(blacklistedSites.first)) {
+      // Ilovani yopish
+      exit(0);
+    }
+
+    return NavigationDecision.navigate;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Jobo Test',style: TextStyle(color: Colors.black),),
-      //   backgroundColor: Colors.white,
-      //   centerTitle: true,
-      // ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 24.0),
-        child: WebViewWidget(controller: controller),
+      body: WillPopScope(
+        onWillPop: () async => false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: WebViewWidget(controller: controller),
+        ),
       ),
     );
   }
